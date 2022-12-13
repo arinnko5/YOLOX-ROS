@@ -23,12 +23,13 @@ from .yolox_ros_py_utils.utils import yolox_py
 
 import rclpy
 from rclpy.node import Node
+from rclpy.qos import QoSProfile, ReliabilityPolicy
 
 from std_msgs.msg import Header
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
 
-from rclpy.qos import qos_profile_sensor_data
+#from rclpy.qos import qos_profile_sensor_data
 
 from bboxes_ex_msgs.msg import BoundingBoxes
 from bboxes_ex_msgs.msg import BoundingBox
@@ -48,6 +49,8 @@ class Predictor(object):
         self.device = device
         self.fp16 = fp16
         self.preproc = ValTransform(legacy=legacy)
+        shigure_qos = QoSProfile(depth=10, reliability=ReliabilityPolicy.BEST_EFFORT)
+        
         if trt_file is not None:
             from torch2trt import TRTModule
 
@@ -127,7 +130,7 @@ class yolox_ros(yolox_py):
         self.pub = self.create_publisher(BoundingBoxes,"bounding_boxes", 10)
         
         if (self.sensor_qos_mode):
-            self.sub = self.create_subscription(Image,"image_raw",self.imageflow_callback, qos_profile_sensor_data)
+            self.sub = self.create_subscription(Image,"image_raw",self.imageflow_callback, shigure_qos)
         else:
             self.sub = self.create_subscription(Image,"image_raw",self.imageflow_callback, 10)
 
