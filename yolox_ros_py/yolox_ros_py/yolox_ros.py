@@ -23,13 +23,13 @@ from .yolox_ros_py_utils.utils import yolox_py
 
 import rclpy
 from rclpy.node import Node
-from rclpy.qos import QoSProfile, ReliabilityPolicy
+#from rclpy.qos import QoSProfile, ReliabilityPolicy
 
 from std_msgs.msg import Header
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image,CompressedImage
 
-#from rclpy.qos import qos_profile_sensor_data
+from rclpy.qos import qos_profile_sensor_data
 
 from bboxes_ex_msgs.msg import BoundingBoxes
 from bboxes_ex_msgs.msg import BoundingBox
@@ -49,7 +49,7 @@ class Predictor(object):
         self.device = device
         self.fp16 = fp16
         self.preproc = ValTransform(legacy=legacy)
-        shigure_qos = QoSProfile(depth=10, reliability=ReliabilityPolicy.BEST_EFFORT)
+        #shigure_qos = QoSProfile(depth=10, reliability=ReliabilityPolicy.BEST_EFFORT)
         
         if trt_file is not None:
             from torch2trt import TRTModule
@@ -130,7 +130,7 @@ class yolox_ros(yolox_py):
         self.pub = self.create_publisher(BoundingBoxes,"bounding_boxes", 10)
         
         if (self.sensor_qos_mode):
-            self.sub = self.create_subscription(CompressedImage,"rs/color/compressed",self.imageflow_callback, shigure_qos)
+            self.sub = self.create_subscription(CompressedImage,"rs/color/compressed",self.imageflow_callback, qos_profile_sensor_data)
         else:
             self.sub = self.create_subscription(CompressedImage,"rs/color/compressed",self.imageflow_callback, 10)
 
@@ -155,7 +155,7 @@ class yolox_ros(yolox_py):
         # --tsize -> resize
         self.declare_parameter('resize', 640)
         
-        self.declare_parameter('sensor_qos_mode', False)
+        self.declare_parameter('sensor_qos_mode', True)
 
         # =============================================================
         self.imshow_isshow = self.get_parameter('imshow_isshow').value
