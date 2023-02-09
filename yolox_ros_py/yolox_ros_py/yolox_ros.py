@@ -26,7 +26,7 @@ from rclpy.node import Node
 
 from std_msgs.msg import Header
 from cv_bridge import CvBridge
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import Image,CompressedImage
 
 from rclpy.qos import qos_profile_sensor_data
 
@@ -127,9 +127,9 @@ class yolox_ros(yolox_py):
         self.pub = self.create_publisher(BoundingBoxes,"bounding_boxes", 10)
         
         if (self.sensor_qos_mode):
-            self.sub = self.create_subscription(Image,"image_raw",self.imageflow_callback, qos_profile_sensor_data)
+            self.sub = self.create_subscription(CompressedImage,"rs/color/compressed",self.imageflow_callback, qos_profile_sensor_data)
         else:
-            self.sub = self.create_subscription(Image,"image_raw",self.imageflow_callback, 10)
+            self.sub = self.create_subscription(CompressedImage,"rs/color/compressed",self.imageflow_callback, 10)
 
     def setting_yolox_exp(self) -> None:
 
@@ -232,9 +232,9 @@ class yolox_ros(yolox_py):
         
         self.predictor = Predictor(model, exp, COCO_CLASSES, trt_file, decoder, device, fp16, legacy)
 
-    def imageflow_callback(self,msg:Image) -> None:
+    def imageflow_callback(self,msg:CompressedImage) -> None:
         try:
-            img_rgb = self.bridge.imgmsg_to_cv2(msg,"bgr8")
+            img_rgb = self.bridge.compressed_imgmsg_to_cv2(msg,"bgr8")
             outputs, img_info = self.predictor.inference(img_rgb)
 
             try:
